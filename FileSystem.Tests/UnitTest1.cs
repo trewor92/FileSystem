@@ -76,7 +76,7 @@ namespace FileSystem.Tests
             Assert.Equal(7, result[variants[2]]);
             Assert.Equal(2, result[variants[3]]);
             Assert.Equal(7, result[variants[4]]);
-            Assert.Equal(1, result[variants[5]]);
+            Assert.Equal(1, result[variants[5]]);//
         }
 
         [Fact]
