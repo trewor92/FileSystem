@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSystem", "FileSystem\Fi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSystemVisitorConsol", "FileSystemVisitorConsol\FileSystemVisitorConsol.csproj", "{C15C9DAC-4C55-412F-9B26-5370A7C2F92E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSystem.Tests", "FileSystem.Tests\FileSystem.Tests.csproj", "{EBB707B5-2808-4710-BD61-0AC5D1ACF17B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{C15C9DAC-4C55-412F-9B26-5370A7C2F92E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C15C9DAC-4C55-412F-9B26-5370A7C2F92E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C15C9DAC-4C55-412F-9B26-5370A7C2F92E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBB707B5-2808-4710-BD61-0AC5D1ACF17B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBB707B5-2808-4710-BD61-0AC5D1ACF17B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBB707B5-2808-4710-BD61-0AC5D1ACF17B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBB707B5-2808-4710-BD61-0AC5D1ACF17B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

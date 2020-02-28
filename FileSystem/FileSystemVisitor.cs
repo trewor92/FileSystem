@@ -91,21 +91,29 @@ namespace FileSystem
         private FileSystemVisitorStatusController _statusController;
         private readonly FilterDelegate _filter;
         private readonly string _path;
+        private IDirectory _directory=new StandartDirectoryViewer();
 
         public FileSystemVisitor(string path)
         {
             _path = path;
             _statusController = new FileSystemVisitorStatusController();
         }
-        public FileSystemVisitor(string path, FilterDelegate filter):this(path)
+
+        public FileSystemVisitor(string path, FilterDelegate filter) : this(path)
         {
+            _filter = filter;
+        }
+
+        public FileSystemVisitor(IDirectory directory, string path, FilterDelegate filter):this(path,filter)
+        {
+            _directory = directory;
             _filter = filter;
         }
 
         private IEnumerable<string> RecursiveFind(string path)
         {
-            var folders = Directory.EnumerateDirectories(path);
-            var files = Directory.EnumerateFiles(path).Select(fileName=> GetFilteredFileOrNull(fileName)).Where(x=>x!=null);
+            var folders = _directory.EnumerateFolders(path);
+            var files = _directory.EnumerateFiles(path).Select(fileName=> GetFilteredOrNull<FileInfo>(fileName)).Where(x=>x!=null);
 
             foreach (var file in files)
             {
@@ -114,7 +122,7 @@ namespace FileSystem
 
             foreach (string folder in folders)
             {
-                var folderName = GetFilteredFolderOrNull(folder);
+                var folderName = GetFilteredOrNull<DirectoryInfo>(folder);
                 if (folderName != null)
                 {
                     yield return folderName;
@@ -127,10 +135,12 @@ namespace FileSystem
             }
         }
    
+        
+
         public IEnumerable<string> Find()
         {
             OnStart?.Invoke(this,new EventArgs());
-
+            
             foreach (var element in RecursiveFind(_path))
             {
                 if (_statusController.IsWorked) yield return element;
@@ -140,34 +150,41 @@ namespace FileSystem
             OnFinish?.Invoke(this, new EventArgs()); 
         }
 
+        public void StopFind()
+        {
+            _statusController.Stop();
+        }
+        public void PassFind()
+        {
+            _statusController.Pass();
+        }
+
         private string GetOnlyName(string element)
         {
             return element.Substring(element.LastIndexOf("\\") + 1);
         }
 
-        private string GetFilteredFileOrNull(string file)
+        private string GetFilteredOrNull<T>(string element)
         {
-            var result = GetOnlyName(file);
-            FileFinded?.Invoke(this, new FileSystemVisitorEventArgs(result,_statusController));
+            var result = GetOnlyName(element);
+
+            if (typeof(T) == typeof(FileInfo))
+                FileFinded?.Invoke(this, new FileSystemVisitorEventArgs(result, _statusController));
+            else if (typeof(T) == typeof(DirectoryInfo))
+                FolderFinded?.Invoke(this, new FileSystemVisitorEventArgs(result, _statusController));
+            else
+                throw new Exception("Generic type is not correct");
+
             if (_filter == null) 
                 return result;
             else if (_filter(result))
             {
-                FilteredFileFinded?.Invoke(this, new FileSystemVisitorEventArgs(result, _statusController));
-                return result;
-            }
-            else return null;
-        }
-
-        private string GetFilteredFolderOrNull(string folder)
-        {
-            var result = GetOnlyName(folder);
-            FolderFinded?.Invoke(this, new FileSystemVisitorEventArgs(result, _statusController));
-            if (_filter == null)
-                return result;
-            else if (_filter(result))
-            {
-                FilteredFolderFinded?.Invoke(this, new FileSystemVisitorEventArgs(result, _statusController));
+                if (typeof(T) == typeof(FileInfo))
+                    FilteredFileFinded?.Invoke(this, new FileSystemVisitorEventArgs(result, _statusController));
+                else if (typeof(T) == typeof(DirectoryInfo))
+                    FilteredFolderFinded?.Invoke(this, new FileSystemVisitorEventArgs(result, _statusController));
+                else
+                    throw new Exception("Generic type is not correct");
                 return result;
             }
             else return null;
