@@ -1,9 +1,6 @@
 ﻿using FileSystem;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace FileSystemVisitorConsol
@@ -43,8 +40,8 @@ namespace FileSystemVisitorConsol
             ConsoleListener consoleListener = new ConsoleListener();
             consoleListener.UpPress += ConsoleListener_UpPress;
             consoleListener.DownPress += ConsoleListener_DownPress;
-            fileSystemVisitor.OnStart += A_OnStart;
-            fileSystemVisitor.OnFinish += A_OnFinish;
+            fileSystemVisitor.Start += A_OnStart;
+            fileSystemVisitor.Finish += A_OnFinish;
             fileSystemVisitor.FolderFinded += A_FolderFinded;
             fileSystemVisitor.FilteredFolderFinded += A_FilteredFolderFinded;
 
@@ -103,6 +100,5 @@ namespace FileSystemVisitorConsol
         {
             Console.WriteLine("Событие OnFinish");
         }
-
     }
 }

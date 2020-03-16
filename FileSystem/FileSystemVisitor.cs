@@ -56,47 +56,16 @@ namespace FileSystem
         }
     }
 
-    public class FileSystemVisitorEventArgs : EventArgs
-    {
-        public FileSystemVisitorEventArgs(string elementName, FileSystemVisitorStatusController statusController)
-        {
-            ElementName = elementName;
-            _statusController = statusController;
-        }
-
-        private FileSystemVisitorStatusController _statusController;
-
-        public string ElementName { get; private set; }
-
-        public void SetStop()
-        {
-            _statusController.Stop();
-        }
-
-        public void SetPass()
-        {
-            _statusController.Pass();
-        }
-
-    }
-
     public class FileSystemVisitor
     {
-        public event EventHandler OnStart;
-        public event EventHandler OnFinish;
-        public event EventHandler<FileSystemVisitorEventArgs> FileFinded;
-        public event EventHandler<FileSystemVisitorEventArgs> FolderFinded;
-        public event EventHandler<FileSystemVisitorEventArgs> FilteredFileFinded;
-        public event EventHandler<FileSystemVisitorEventArgs> FilteredFolderFinded;
-        private FileSystemVisitorStatusController _statusController;
+        private FileSystemVisitorStatusController _statusController= new FileSystemVisitorStatusController();
+        private IDirectory _directory=new StandartDirectoryViewer();
         private readonly FilterDelegate _filter;
         private readonly string _path;
-        private IDirectory _directory=new StandartDirectoryViewer();
 
         public FileSystemVisitor(string path)
         {
             _path = path;
-            _statusController = new FileSystemVisitorStatusController();
         }
 
         public FileSystemVisitor(string path, FilterDelegate filter) : this(path)
@@ -108,6 +77,41 @@ namespace FileSystem
         {
             _directory = directory;
             _filter = filter;
+        }
+
+        public event EventHandler<EventArgs> Start;
+        public event EventHandler<EventArgs> Finish;
+        public event EventHandler<FileSystemVisitorEventArgs> FileFinded;
+        public event EventHandler<FileSystemVisitorEventArgs> FolderFinded;
+        public event EventHandler<FileSystemVisitorEventArgs> FilteredFileFinded;
+        public event EventHandler<FileSystemVisitorEventArgs> FilteredFolderFinded;
+
+        protected virtual void OnStart()
+        {
+            new EventArgs().Raise(this, ref Start);
+        }
+        protected virtual void OnFinish()
+        {
+            new EventArgs().Raise(this, ref Finish);
+        }
+        protected virtual void OnFileFinded(FileSystemVisitorEventArgs e)
+        {
+            e.Raise(this, ref FileFinded);
+        }
+
+        protected virtual void OnFolderFinded(FileSystemVisitorEventArgs e)
+        {
+            e.Raise(this, ref FolderFinded);
+        }
+
+        protected virtual void OnFilteredFileFinded(FileSystemVisitorEventArgs e)
+        {
+            e.Raise(this, ref FilteredFileFinded);
+        }
+
+        protected virtual void OnFilteredFolderFinded(FileSystemVisitorEventArgs e)
+        {
+            e.Raise(this, ref FilteredFolderFinded);
         }
 
         private IEnumerable<string> RecursiveFind(string path)
@@ -130,16 +134,14 @@ namespace FileSystem
 
                 foreach (string subFolder in RecursiveFind(folder))
                 {
-                    yield return GetOnlyName(subFolder);
+                    yield return subFolder;
                 }
             }
         }
    
-        
-
         public IEnumerable<string> Find()
         {
-            OnStart?.Invoke(this,new EventArgs());
+            OnStart();
             
             foreach (var element in RecursiveFind(_path))
             {
@@ -147,7 +149,7 @@ namespace FileSystem
                 if (_statusController.IsStopped) yield break;
                 if (_statusController.IsPassed) _statusController.Work();
             }
-            OnFinish?.Invoke(this, new EventArgs()); 
+            OnFinish(); 
         }
 
         public void StopFind()
@@ -169,9 +171,9 @@ namespace FileSystem
             var result = GetOnlyName(element);
 
             if (typeof(T) == typeof(FileInfo))
-                FileFinded?.Invoke(this, new FileSystemVisitorEventArgs(result, _statusController));
+                OnFileFinded(new FileSystemVisitorEventArgs(result, _statusController));
             else if (typeof(T) == typeof(DirectoryInfo))
-                FolderFinded?.Invoke(this, new FileSystemVisitorEventArgs(result, _statusController));
+                OnFolderFinded(new FileSystemVisitorEventArgs(result, _statusController));
             else
                 throw new Exception("Generic type is not correct");
 
@@ -180,9 +182,9 @@ namespace FileSystem
             else if (_filter(result))
             {
                 if (typeof(T) == typeof(FileInfo))
-                    FilteredFileFinded?.Invoke(this, new FileSystemVisitorEventArgs(result, _statusController));
+                    OnFilteredFileFinded(new FileSystemVisitorEventArgs(result, _statusController));
                 else if (typeof(T) == typeof(DirectoryInfo))
-                    FilteredFolderFinded?.Invoke(this, new FileSystemVisitorEventArgs(result, _statusController));
+                    OnFilteredFolderFinded(new FileSystemVisitorEventArgs(result, _statusController));
                 else
                     throw new Exception("Generic type is not correct");
                 return result;

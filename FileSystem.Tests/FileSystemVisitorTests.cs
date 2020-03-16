@@ -43,11 +43,11 @@ namespace FileSystem.Tests
             FileSystemVisitor fileSystemVisitor = new FileSystemVisitor(_mockDirectory.Object, "root", x=>x.Length<=5);
             List<string> actual = new List<string>();
             string[] variants = new[] { "OnStart", "OnFinish", "FileFinded", "FolderFinded", "FilteredFileFinded", "FilteredFolderFinded" };
-            fileSystemVisitor.OnStart += delegate (object sender, EventArgs e)
+            fileSystemVisitor.Start += delegate (object sender, EventArgs e)
             {
                   actual.Add(variants[0]);
             };
-            fileSystemVisitor.OnFinish += delegate (object sender, EventArgs e)
+            fileSystemVisitor.Finish += delegate (object sender, EventArgs e)
             {
                   actual.Add(variants[1]);
             };
